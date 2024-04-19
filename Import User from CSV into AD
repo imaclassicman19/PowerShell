@@ -1,0 +1,32 @@
+# Import ActiveDirectory Module
+
+Import-Module ActiveDirectory
+
+# import list of new users from CSV
+$users = Import-Csv -Path "C:\Scripts\users.csv"
+
+# prepare default values for all imported users 
+$UsersCN = "OU=Finance-Users,OU=Finance,DC=ANSARITECH,DC=COM"
+$DefaultPassword = ConvertTo-SecureString "CDA#2024!" -AsPlainText -Force 
+$UpnDomain = "@ansaritech.com"
+
+# prepare values for individual users
+foreach ($user in $users) {
+    $params = @{
+        GivenName            = $user.firstname
+        Surname              = $user.lastname
+        DisplayName          = $user.firstname + " " + $user.lastname
+        Name                 = $user.firstname + " " + $user.lastname
+        SamAccountName       = $user.accountname
+        UserPrincipalName    = $user.'accountname ' + $UpnDomain
+        AccountPassword      = $DefaultPassword
+        Path                 = $UsersCN
+        Enabled              = $true
+        ChangePasswordAtLogon = $true
+}
+
+$params
+
+# create each new user 
+New-ADUser @params -PassThru
+}
